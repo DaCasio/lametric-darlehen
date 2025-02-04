@@ -26,8 +26,8 @@ jobs:
       - name: Update Loan Data
         run: |
           python update_loan.py
-          git status  # Debug-Ausgabe
-          ls -la      # Zeigt generierte Dateien
+          git add darlehen.json  # Kritischer Fix
+          git status
 
       - name: Synchronize with Remote
         run: |
