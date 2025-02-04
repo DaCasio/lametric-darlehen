@@ -2,12 +2,11 @@ name: Daily Loan Update
 
 on:
   schedule:
-    - cron: "0 0 * * *"  # Täglich um 00:00 UTC
+    - cron: "0 0 * * *"  # Täglich um Mitternacht UTC
   workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   update:
@@ -17,7 +16,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -27,14 +25,15 @@ jobs:
       - name: Generate JSON File
         run: |
           python update_loan.py
-          ls -la         # Überprüft, ob die Datei vorhanden ist
+          ls -la         # Überprüft, ob die Datei erstellt wurde
           cat darlehen.json
 
-      - name: Synchronize with Remote
+      - name: Commit and Push Changes
         run: |
-          git config --global user.name "GitHub Actions"
+          git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git pull origin main --rebase --autostash
-          git push origin main -f
+          git add darlehen.json || echo "No changes to commit"
+          git commit -m "Update darlehen.json" || echo "Nothing to commit"
+          git push origin main || echo "Nothing to push"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
