@@ -14,7 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          persist-credentials: true  # Wichtig für Push-Operationen
+          fetch-depth: 0  # Wichtig für korrekte Branch-Historie
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,8 +25,15 @@ jobs:
       - name: Run update script
         run: python update_loan.py
 
+      - name: Pull latest changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git pull origin main --rebase  # Kritischer Fix
+
       - name: Commit & Push
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main
+          force: true  # Nur im Fehlerfall notwendig
