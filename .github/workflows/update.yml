@@ -23,12 +23,11 @@ jobs:
         with:
           python-version: "3.11"
 
-- name: Update Loan Data
-  run: |
-    python update_loan.py
-    git status  # Debug-Ausgabe
-    ls -la      # Zeigt generierte Dateien
-
+      - name: Update Loan Data
+        run: |
+          python update_loan.py
+          git status  # Debug-Ausgabe
+          ls -la      # Zeigt generierte Dateien
 
       - name: Synchronize with Remote
         run: |
