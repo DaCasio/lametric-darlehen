@@ -1,0 +1,25 @@
+name: Daily Loan Update
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Täglich um Mitternacht UTC
+  workflow_dispatch:     # Manueller Trigger möglich
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run update script
+        run: python update_loan.py
+
+      - name: Commit & Push
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
