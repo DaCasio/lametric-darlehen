@@ -1,26 +1,35 @@
 from datetime import datetime, timedelta
 import json
 
+# Start- und Enddaten
 start_date = datetime(2025, 1, 15)
 end_date = datetime(2030, 3, 15)
-total_days = (end_date - start_date).days  # Korrekt: 1885 Tage
-daily_reduction = 25995.73 / total_days    # 13.80€/Tag
+total_days = (end_date - start_date).days
 
-# Heutiges Datum dynamisch
+# Berechnung der täglichen Reduktion
+start_amount = 25995.73
+daily_reduction = start_amount / total_days
+
+# Aktuellen Stand berechnen
 today = datetime.now().date()
 days_passed = (today - start_date.date()).days
-current_value = 25995.73 - (daily_reduction * days_passed)
+current_value = max(start_amount - (daily_reduction * days_passed), 0)
 
-with open("darlehen.json", "w") as f:
-    json.dump({
-        "frames": [{
-            "text": f"{max(current_value, 0):.2f}€",
+# JSON-Datei erstellen
+json_data = {
+    "frames": [
+        {
+            "text": f"{current_value:.2f}€",
             "icon": "i3219",
             "goalData": {
-                "start": 25995.73,
-                "current": max(current_value, 0),
+                "start": start_amount,
+                "current": current_value,
                 "end": 0,
                 "unit": "€"
             }
-        }]
-    }, f)
+        }
+    ]
+}
+
+with open("darlehen.json", "w") as f:
+    json.dump(json_data, f, indent=2)
