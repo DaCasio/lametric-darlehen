@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 import json
 
 # Start- und Enddaten
-start_date = datetime(2025, 1, 15)
+start_date = datetime(2025, 2, 4)
 end_date = datetime(2030, 3, 15)
 total_days = (end_date - start_date).days
 
 # Berechnung der täglichen Reduktion
-start_amount = 25995.73
+start_amount = 25719
 daily_reduction = start_amount / total_days
 
 # Aktuellen Stand berechnen
