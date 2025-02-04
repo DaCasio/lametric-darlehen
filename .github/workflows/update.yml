@@ -34,9 +34,10 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git pull origin main --rebase --autostash
-          git push origin main -f  # Force-Push als letzte Lösung
 
-      - name: Force Push Fallback
-        if: ${{ failure() }}
-        run: |
-          git push origin main -f
+      - name: Push Changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          force: false  # Nur bei persistierenden Fehlern auf true setzen
