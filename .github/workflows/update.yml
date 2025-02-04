@@ -1,12 +1,11 @@
 name: Daily Loan Update
 on:
   schedule:
-    - cron: "0 0 * * *"  # Täglich 00:00 UTC
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   update:
@@ -15,8 +14,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Komplette Historie laden
-          persist-credentials: true
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -26,15 +24,11 @@ jobs:
       - name: Update Loan Data
         run: python update_loan.py
 
-      - name: Synchronize with Remote
+      - name: Commit and Push Changes
         run: |
-          git config --global user.name "GitHub Actions"
+          git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git pull origin main --rebase --autostash
-
-      - name: Push Changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          force: false  # Nur bei persistierenden Fehlern auf true setzen
+          git add darlehen.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update loan data" && git push)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
