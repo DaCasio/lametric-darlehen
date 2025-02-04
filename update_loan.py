@@ -14,7 +14,7 @@ today = datetime.now().date()
 days_passed = (today - start_date.date()).days
 current_value = max(start_amount - daily_reduction * days_passed, 0)
 
-# Runden auf ganze Zahl ohne Nachkommastellen
+# Rundung auf ganze Zahlen (keine Nachkommastellen)
 current_int = int(round(current_value))
 start_int = int(round(start_amount))
 
@@ -34,5 +34,6 @@ data = {
     ]
 }
 
+# Speichere die JSON-Datei
 with open("darlehen.json", "w") as f:
     json.dump(data, f, indent=2)
