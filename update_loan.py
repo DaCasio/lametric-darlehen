@@ -1,29 +1,32 @@
 from datetime import datetime, timedelta
 import json
 
-# Start- und Enddaten
-start_date = datetime(2025, 2, 4)
+# Konfiguration der Darlehensdaten
+start_date = datetime(2025, 1, 15)
 end_date = datetime(2030, 3, 15)
-total_days = (end_date - start_date).days
+start_amount = 25995.73
 
-# Berechnung der täglichen Reduktion
-start_amount = 25719
+total_days = (end_date - start_date).days
 daily_reduction = start_amount / total_days
 
-# Aktuellen Stand berechnen
+# Berechne den aktuellen Stand basierend auf dem heutigen Datum
 today = datetime.now().date()
 days_passed = (today - start_date.date()).days
-current_value = max(start_amount - (daily_reduction * days_passed), 0)
+current_value = max(start_amount - daily_reduction * days_passed, 0)
 
-# JSON-Datei erstellen
-json_data = {
+# Rundung ohne Nachkommastellen: Umwandlung in Integer
+current_int = int(round(current_value, 0))
+start_int = int(round(start_amount, 0))
+
+# Erstelle den Datensatz im JSON-Format
+data = {
     "frames": [
         {
-            "text": f"{current_value:.2f}€",
+            "text": f"{current_int}€",
             "icon": "i3219",
             "goalData": {
-                "start": start_amount,
-                "current": current_value,
+                "start": start_int,
+                "current": current_int,
                 "end": 0,
                 "unit": "€"
             }
@@ -32,4 +35,4 @@ json_data = {
 }
 
 with open("darlehen.json", "w") as f:
-    json.dump(json_data, f, indent=2)
+    json.dump(data, f, indent=2)
