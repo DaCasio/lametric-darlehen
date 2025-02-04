@@ -1,5 +1,4 @@
 name: Daily Loan Update
-
 on:
   schedule:
     - cron: "0 0 * * *"  # Täglich um Mitternacht UTC
@@ -25,8 +24,7 @@ jobs:
       - name: Generate JSON File
         run: |
           python update_loan.py
-          ls -la         # Überprüft, ob die Datei erstellt wurde
-          cat darlehen.json
+          ls -la  # Überprüft, ob die Datei erstellt wurde
 
       - name: Commit and Push Changes
         run: |
