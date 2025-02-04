@@ -1,7 +1,7 @@
 name: Daily Loan Update
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 0 * * *"  # Täglich 00:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -12,28 +12,29 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Wichtig für korrekte Branch-Historie
+          fetch-depth: 0  # Komplette Historie laden
           persist-credentials: true
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Run update script
+      - name: Update Loan Data
         run: python update_loan.py
 
-      - name: Pull latest changes
+      - name: Synchronize with Remote
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git pull origin main --rebase  # Kritischer Fix
+          git pull origin main --rebase --autostash
 
-      - name: Commit & Push
+      - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main
-          force: true  # Nur im Fehlerfall notwendig
+          force: false  # Nur bei persistierenden Fehlern auf true setzen
