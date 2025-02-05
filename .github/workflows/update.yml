@@ -1,31 +1,31 @@
-name: Daily Loan Update
+name: Update Loan Data
+
 on:
   schedule:
-    - cron: "0 23 * * *"  # 00:00 MEZ
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    - cron: '0 0 * * *'  # Täglich um Mitternacht
+  workflow_dispatch:     # Manueller Trigger
 
 jobs:
-  update:
+  update-loan-data:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-      - name: Generate JSON
-        run: python update_loan.py
+    - name: Pull changes
+      run: git pull origin main
 
-      - name: Commit & Push
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Automatisches Darlehens-Update"
-          file_pattern: darlehen.json
+    - name: Update loan data
+      run: python update_loan.py
+
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: Automatisches Darlehens-Update
+        file_pattern: darlehen.json
