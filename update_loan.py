@@ -36,7 +36,7 @@ data = {
     "frames": [
         {
             "text": f"{current_int}€",
-            "icon": "i3219",
+            "icon": "i616",
             "goalData": {
                 "start": start_int,
                 "current": current_int,
