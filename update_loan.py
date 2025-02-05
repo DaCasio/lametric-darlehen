@@ -23,7 +23,7 @@ data = {
     "frames": [
         {
             "text": f"{current_int}€",
-            "icon": "i6256",
+            "icon": "i3219",
             "goalData": {
                 "start": start_int,
                 "current": current_int,
@@ -37,3 +37,4 @@ data = {
 # Speichere die JSON-Datei
 with open("darlehen.json", "w") as f:
     json.dump(data, f, indent=2)
+    
