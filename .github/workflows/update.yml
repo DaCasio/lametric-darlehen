@@ -19,9 +19,6 @@ jobs:
       with:
         python-version: '3.9'
 
-    - name: Pull changes
-      run: git pull origin main
-
     - name: Update loan data
       run: python update_loan.py
 
@@ -29,3 +26,4 @@ jobs:
       with:
         commit_message: Automatisches Darlehens-Update
         file_pattern: darlehen.json
+        push_options: '--force'
