@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import json
-from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN
+from decimal import Decimal, ROUND_HALF_UP
 
 # Konfiguration der Darlehensdaten
 start_date = date(2025, 1, 15)
@@ -36,4 +36,31 @@ today = date.today()
 current_value = calculate_loan_balance(today)
 
 # Rundung auf ganze Zahlen (keine Nachkommastellen)
-current_
+current_int = int(current_value.quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+start_int = int(start_amount.quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+
+# Erstelle den Datensatz im JSON-Format
+data = {
+    "frames": [
+        {
+            "text": f"{current_int}€",
+            "icon": "i616",
+            "goalData": {
+                "start": start_int,
+                "current": current_int,
+                "end": 0,
+                "unit": "€"
+            }
+        }
+    ]
+}
+
+# Speichere die JSON-Datei
+with open("darlehen.json", "w") as f:
+    json.dump(data, f, indent=2)
+
+print(f"Aktueller Darlehensstand: {current_int}€")
+
+# Zusätzliche Ausgabe für den 15.2.2025
+balance_15_02_2025 = calculate_loan_balance(date(2025, 2, 15))
+print(f"Darlehensstand am 15.2.2025: {int(balance_15_02_2025)}€")
