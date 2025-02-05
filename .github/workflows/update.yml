@@ -1,7 +1,7 @@
 name: Daily Loan Update
 on:
   schedule:
-    - cron: "0 0 * * *"  # Täglich um Mitternacht UTC
+    - cron: "0 23 * * *"  # Täglich um 23:00 UTC = 00:00 MEZ
   workflow_dispatch:
 
 permissions:
