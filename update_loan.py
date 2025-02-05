@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 
 # Konfiguration der Darlehensdaten
-start_date = datetime(2025, 1, 15)
-end_date = datetime(2030, 3, 15)
+start_date = date(2025, 1, 15)
+end_date = date(2030, 3, 15)
 start_amount = 25995.73
 monthly_rate = 497.71
 annual_interest_rate = 0.0674  # 6.74% p.a.
@@ -24,7 +24,7 @@ def calculate_loan_balance(target_date):
     return max(current_balance, 0)
 
 # Berechne den aktuellen Stand basierend auf dem heutigen Datum
-today = datetime.now().date()
+today = date.today()
 current_value = calculate_loan_balance(today)
 
 # Rundung auf ganze Zahlen (keine Nachkommastellen)
