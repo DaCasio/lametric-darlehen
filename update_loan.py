@@ -9,23 +9,21 @@ start_amount = Decimal('25995.73')
 monthly_rate = Decimal('497.71')
 annual_interest_rate = Decimal('0.0674')  # 6.74% p.a.
 
-# Täglicher Zinssatz (360-Tage-Basis)
-daily_interest_rate = annual_interest_rate / Decimal('360')
+# Täglicher Zinssatz (365-Tage-Basis für genauere tägliche Berechnung)
+daily_interest_rate = annual_interest_rate / Decimal('365')
 
 def calculate_loan_balance(target_date):
     current_balance = start_amount
     current_date = start_date
-    days_in_year = 360
     
     while current_date <= target_date:
-        if current_date.day == 15:
-            # Monatliche Zinsberechnung
-            days_since_last_payment = 30  # Annahme: immer 30 Tage zwischen Zahlungen
-            interest = current_balance * (annual_interest_rate / 12)
-            current_balance += interest.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-            
+        if current_date.day == 15 and current_date != start_date:
             # Monatliche Rate abziehen
             current_balance -= monthly_rate
+        
+        # Tägliche Zinsberechnung
+        interest = current_balance * daily_interest_rate
+        current_balance += interest.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         
         current_date += timedelta(days=1)
     
