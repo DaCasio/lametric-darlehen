@@ -1,11 +1,11 @@
 {
   "frames": [
     {
-      "text": "26102\u20ac",
+      "text": "26100\u20ac",
       "icon": "i616",
       "goalData": {
         "start": 25996,
-        "current": 26102,
+        "current": 26100,
         "end": 0,
         "unit": "\u20ac"
       }
