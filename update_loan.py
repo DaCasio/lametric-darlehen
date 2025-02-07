@@ -10,7 +10,7 @@ DARLEHEN = {
     'start_date': date(2025, 1, 15),
     'end_date': date(2030, 3, 15),
     'start_kapital': Decimal('25995.73'),
-    'monatsrate': Decimal('497.71'),
+    'monatsrate': Decimal('497.71') + Decimal('5')  # 502,71 €
     'zins_satz': Decimal('6.74') / Decimal('100'),  # 6.74% p.a.
     'zinsmethode': '30/360'  # Bankenstandard
 }
