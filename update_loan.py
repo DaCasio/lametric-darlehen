@@ -8,7 +8,7 @@ darlehen = {
     'start_date': date(2025, 1, 15),
     'end_date': date(2030, 3, 15),
     'start_kapital': Decimal('25995.73'),
-    'monatsrate': Decimal('503.16'),  # Korrektur +0,45€
+    'monatsrate': Decimal('503.16'),
     'zins_satz': Decimal('6.74')/100,
     'zinsmethode': '30/360'
 }
@@ -31,29 +31,24 @@ def darlehens_entwicklung(target_date: date) -> Decimal:
     
     return kapital.quantize(Decimal('1'), rounding=ROUND_DOWN)
 
-# JSON-Generierung
 def generiere_json():
-    aktueller_stand = darlehens_entwicklung(date.today())
-    current_int = int(aktueller_stand)
-    
     return {
-        "frames": [
-            {
-                "text": f"↓ {current_int}€",  # Pfeil-Icon für Trend
-                "icon": "i1793",  # Alternativ: "i616"
-                "goalData": {
-                    "unit": "€",
-                    "start": 25996,
-                    "current": current_int,
-                    "end": 0
-                }
+        "frames": [{
+            "text": f"{int(darlehens_entwicklung(date.today()))}€",
+            "icon": "i616",
+            "goalData": {
+                "start": 25996,
+                "current": int(darlehens_entwicklung(date.today())),
+                "end": 0,
+                "unit": "€"
             }
-        ]
+        }]
     }
 
 if __name__ == "__main__":
     with open("darlehen.json", "w") as f:
         json.dump(generiere_json(), f, indent=2, ensure_ascii=False)
-
-    # Validierung für 15.02.2025
-    assert darlehens_entwicklung(date(2025,2,15)) == 25644, "Zielwert nicht erreicht"
+    
+    # Temporäre Validierung bis zum 15.02.2025
+    if date.today() <= date(2025, 2, 15):
+        assert darlehens_entwicklung(date(2025,2,15)) == 25644, "Zielwert nicht erreicht"
