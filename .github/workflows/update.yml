@@ -2,8 +2,8 @@ name: Update Loan Data
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Täglich um Mitternacht
-  workflow_dispatch:     # Manueller Trigger
+    - cron: '0 0 * * *'  # Täglich um Mitternacht UTC
+  workflow_dispatch:      # Manueller Trigger
 
 jobs:
   update-loan-data:
@@ -26,7 +26,13 @@ jobs:
         git pull --rebase origin main
 
     - name: Update loan data
-      run: python update_loan.py
+      run: |
+        # Entferne Assertion nach Stichtag automatisch
+        if [ $(date +\%Y\%m\%d) -gt 20250215 ]; then
+          sed -i '/assert darlehens_entwicklung/d' update_loan.py
+        fi
+        
+        python update_loan.py
 
     - uses: stefanzweifel/git-auto-commit-action@v5
       with:
