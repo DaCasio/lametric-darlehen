@@ -37,7 +37,7 @@ def generiere_json():
         "frames": [
             {
                 "text": f"{int(aktueller_stand)}€",
-                "icon": "i616",
+                "icon": "i3309",
                 "goalData": {
                     "start": 25996,
                     "current": int(aktueller_stand),
