@@ -2,7 +2,7 @@ name: Update Loan Data
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Täglich 00:00 UTC
+    - cron: '0 6 * * *'  # Täglich um 06:00 UTC
   workflow_dispatch:     # Manueller Trigger
 
 jobs:
