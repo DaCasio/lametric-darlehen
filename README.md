@@ -186,8 +186,3 @@ Dieses Projekt steht unter der MIT-Lizenz. Details findest du in der Datei `LICE
 Viel Erfolg mit dem **LaMetric Darlehen Tracker**! 🎉
 
 --- 
-
-Diese Beschreibung ist ausführlich, gut strukturiert und deckt alle wichtigen Details ab, die für die Nutzer des Projekts hilfreich sein könnten. Du kannst die Inhalte bei Bedarf noch weiter anpassen.
-
----
-Antwort von Perplexity: pplx.ai/share
