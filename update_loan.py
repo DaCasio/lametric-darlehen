@@ -9,7 +9,7 @@ darlehen = {
     'end_date': date(2030, 3, 15),
     'start_kapital': Decimal('25995.73'),
     'monatsrate': Decimal('503.16'),
-    'zins_satz': Decimal('6.74')/100,
+    'zins_satz': Decimal('6.742')/100,
     'zinsmethode': '30/360'
 }
 
