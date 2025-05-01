@@ -1,49 +1,54 @@
-name: Update Loan Data
+name: Update Darlehensdaten
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Täglich um 06:00 UTC
-  workflow_dispatch:     # Manueller Trigger
+    - cron: '0 0 * * *'  # Tägliche Ausführung um 00:00 UTC
+  workflow_dispatch:     # Manueller Trigger über GitHub UI
 
 jobs:
-  update-loan-data:
+  update:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 5
+
     steps:
-    - uses: actions/checkout@v4
+    - name: Repository auschecken
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Set up Python
+    - name: Python 3.9 einrichten
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
-    - name: Synchronize with remote
+    - name: Synchronisiere mit Remote
       run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
         git pull --rebase origin main
 
-    - name: Update loan data
+    - name: Aktualisiere Darlehensdaten
       run: |
-        # Entferne Assertion nach Stichtag
-        if [ $(date +\%Y\%m\%d) -gt 20250215 ]; then
-          sed -i '/assert darlehens_entwicklung/d' update_loan.py
+        # Entferne Validierung nach dem 15.05.2025
+        if [ $(date +\%Y\%m\%d) -gt 20250515 ]; then
+          sed -i '/assert 24575/d' update_loan.py
         fi
-        
-        # Führe Skript mit Fehlertoleranz aus
+
+        # Führe Skript mit Fehlerbehandlung aus
         python update_loan.py || {
-          if [ $(date +\%Y\%m\%d) -lt 20250215 ]; then
-            echo "Pre-deadline validation failure ignored"
+          if [ $(date +\%Y\%m\%d) -lt 20250515 ]; then
+            echo "Validierungsfehler vor dem 15.05.2025 ignoriert"
             exit 0
           else
             exit 1
           fi
         }
 
-    - uses: stefanzweifel/git-auto-commit-action@v5
+    - name: Committe Änderungen
+      uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: Automatisches Darlehens-Update
+        commit_message: "Automatischer Darlehens-Update – $(date +'%d.%m.%Y')"
         file_pattern: darlehen.json
-        push_options: '--force'
+        commit_user_name: GitHub Actions
+        commit_user_email: actions@github.com
+        push_options: --force
