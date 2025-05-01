@@ -1,9 +1,9 @@
-name: Update Darlehensdaten
+name: Darlehens-Tracker Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Tägliche Ausführung um 00:00 UTC
-  workflow_dispatch:     # Manueller Trigger über GitHub UI
+    - cron: "0 0 * * *"  # Täglich um 00:00 UTC
+  workflow_dispatch:      # Manueller Trigger (über GitHub UI)
 
 jobs:
   update:
@@ -19,36 +19,35 @@ jobs:
     - name: Python 3.9 einrichten
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: "3.9"
 
-    - name: Synchronisiere mit Remote
+    - name: Synchronisiere mit dem neuesten Stand
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git pull --rebase origin main
 
-- name: Update loan data
-  run: |
-    # Entferne Assertion nach dem 15.05.2025
-    if [ $(date +\%Y\%m\%d) -gt 20250515 ]; then
-      sed -i '/assert 24577/d' update_loan.py
-    fi
-    
-    # Skriptausführung
-    python update_loan.py || {
-      if [ $(date +\%Y\%m\%d) -lt 20250515 ]; then
-        echo "Pre-validation error ignored"
-        exit 0
-      else
-        exit 1
-      fi
-    }
+    - name: Aktualisiere Darlehensdaten
+      run: |
+        # Entferne Validierung nach dem 15.05.2025
+        if [ $(date +\%Y\%m\%d) -gt 20250515 ]; then
+          sed -i '/assert 24577/d' update_loan.py
+        fi
 
+        # Führe Skript aus
+        python update_loan.py || {
+          if [ $(date +\%Y\%m\%d) -lt 20250515 ]; then
+            echo "Pre-validation error ignored"
+            exit 0
+          else
+            exit 1
+          fi
+        }
 
-    - name: Committe Änderungen
+    - name: Änderungen committen
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "Automatischer Darlehens-Update – $(date +'%d.%m.%Y')"
+        commit_message: "🚀 Manuelles Update – $(date +'%d.%m.%Y %H:%M')"
         file_pattern: darlehen.json
         commit_user_name: GitHub Actions
         commit_user_email: actions@github.com
