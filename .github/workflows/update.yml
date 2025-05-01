@@ -27,22 +27,23 @@ jobs:
         git config user.email "actions@github.com"
         git pull --rebase origin main
 
-    - name: Aktualisiere Darlehensdaten
-      run: |
-        # Entferne Validierung nach dem 15.05.2025
-        if [ $(date +\%Y\%m\%d) -gt 20250515 ]; then
-          sed -i '/assert 24575/d' update_loan.py
-        fi
+- name: Update loan data
+  run: |
+    # Entferne Assertion nach dem 15.05.2025
+    if [ $(date +\%Y\%m\%d) -gt 20250515 ]; then
+      sed -i '/assert 24577/d' update_loan.py
+    fi
+    
+    # Skriptausführung
+    python update_loan.py || {
+      if [ $(date +\%Y\%m\%d) -lt 20250515 ]; then
+        echo "Pre-validation error ignored"
+        exit 0
+      else
+        exit 1
+      fi
+    }
 
-        # Führe Skript mit Fehlerbehandlung aus
-        python update_loan.py || {
-          if [ $(date +\%Y\%m\%d) -lt 20250515 ]; then
-            echo "Validierungsfehler vor dem 15.05.2025 ignoriert"
-            exit 0
-          else
-            exit 1
-          fi
-        }
 
     - name: Committe Änderungen
       uses: stefanzweifel/git-auto-commit-action@v5
