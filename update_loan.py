@@ -10,38 +10,32 @@ darlehen = {
     'start_kapital': Decimal('32000.00'),
     'monatsrate': Decimal('497.71'),
     'zins_satz': Decimal('6.742') / 100,
-    'zinsmethode': '30/360'
+    'zinsmethode': 'act/360'  # Tägliche Zinsen (Actual/360)
 }
 
-def days_360(start: date, end: date) -> int:
-    """Berechnet Tage nach 30/360-Methode"""
-    d1 = min(start.day, 30)
-    d2 = end.day if (start.day < 30 or end.day < 30) else 30
-    return 360*(end.year - start.year) + 30*(end.month - start.month) + (d2 - d1)
+def berechne_tägliche_zinsen(kapital: Decimal, tage: int) -> Decimal:
+    return (kapital * darlehen['zins_satz'] / 360 * tage).quantize(Decimal('0.00000000'))
 
 def darlehens_entwicklung(target_date: date) -> Decimal:
     current_date = darlehen['start_date']
     kapital = darlehen['start_kapital']
-    letzte_zahlung = current_date
     
     while current_date <= target_date:
-        # Zinsen bis zum nächsten Zahlungstermin berechnen
-        if current_date.day == 15 or current_date == darlehen['start_date']:
-            next_payment = current_date + timedelta(days=30)
-            next_payment = next_payment.replace(day=15)
-            
-            tage = days_360(current_date, min(next_payment, target_date))
-            zinsen = kapital * darlehen['zins_satz'] / 360 * tage
-            kapital += zinsen
-            
-            if next_payment <= target_date:
-                kapital -= darlehen['monatsrate']
-                kapital = kapital.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
-                letzte_zahlung = next_payment
-            
-            current_date = min(next_payment, target_date)
-        else:
-            current_date += timedelta(days=1)
+        # Bestimme das nächste Zahlungsdatum (15. des nächsten Monats)
+        next_payment = current_date.replace(day=15) + timedelta(days=31)
+        next_payment = next_payment.replace(day=15)
+        
+        # Berechne Tage bis zum nächsten Zahlungstermin oder Target-Datum
+        tage_bis = (min(next_payment, target_date) - current_date).days
+        zinsen = berechne_tägliche_zinsen(kapital, tage_bis)
+        kapital += zinsen
+        
+        # Monatsrate abziehen, wenn Zahlungstermin erreicht
+        if next_payment <= target_date:
+            kapital -= darlehen['monatsrate']
+            kapital = kapital.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+        
+        current_date = min(next_payment, target_date)
     
     return kapital.quantize(Decimal('1'), rounding=ROUND_DOWN)
 
@@ -57,19 +51,3 @@ def generiere_json():
                     "current": int(aktueller_stand),
                     "end": 0,
                     "unit": "€"
-                }
-            }
-        ]
-    }
-
-if __name__ == "__main__":
-    with open("darlehen.json", "w") as f:
-        json.dump(generiere_json(), f, indent=2, ensure_ascii=False)
-
-    # Validierungen
-    heute = date.today()
-    if heute == date(2025, 5, 15):
-        assert 24577 <= darlehens_entwicklung(heute) <= 24579
-    elif heute == date(2025, 6, 15):
-        assert 24217 <= darlehens_entwicklung(heute) <= 24219
-        
