@@ -1,8 +1,8 @@
-name: Darlehens-Update
+name: Tägliches Darlehens-Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Täglich um 00:00 UTC
+    - cron: '0 0 * * *'  # Täglich um Mitternacht UTC
   workflow_dispatch:     # Manueller Trigger
 
 jobs:
@@ -13,25 +13,26 @@ jobs:
     steps:
     - name: Repository auschecken
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Python 3.9 einrichten
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
-    - name: Darlehensstand aktualisieren
+    - name: Synchronisiere mit dem Hauptbranch
       run: |
-        python update_loan.py || {
-          if [ $(date +\%Y\%m\%d) -lt 20250515 ]; then
-            echo "Vorvalidierungsfehler ignoriert"
-            exit 0
-          else
-            exit 1
-          fi
-        }
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git pull --rebase origin main
 
-    - name: Änderungen committen
+    - name: Aktualisiere Darlehensdaten
+      run: python update_loan.py
+
+    - name: Committe Änderungen
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "💰 Tägliche Darlehensaktualisierung"
+        commit_message: "📉 Tägliche Darlehensaktualisierung"
         file_pattern: darlehen.json
+        push_options: --force
