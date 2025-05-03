@@ -13,38 +13,17 @@ jobs:
     steps:
     - name: Repository auschecken
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Python 3.9 einrichten
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
-    - name: Synchronisiere mit Remote
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git pull --rebase origin main
-
-    - name: Aktualisiere Darlehensstand
-      run: |
-        if [ $(date +\%Y\%m\%d) -gt 20250515 ]; then
-          sed -i '/assert 24577/d' update_loan.py
-        fi
-        
-        python update_loan.py || {
-          if [ $(date +\%Y\%m\%d) -lt 20250515 ]; then
-            echo "Pre-Deadline-Validierung ignoriert"
-            exit 0
-          else
-            exit 1
-          fi
-        }
+    - name: Darlehensstand berechnen
+      run: python update_loan.py
 
     - name: Änderungen committen
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "📉 Darlehensupdate – $(date +'%d.%m.%Y')"
+        commit_message: "📉 Tägliches Darlehens-Update"
         file_pattern: darlehen.json
-        push_options: --force
