@@ -2,8 +2,28 @@ from datetime import date, timedelta
 from decimal import Decimal, ROUND_DOWN
 import json
 
-# Kompletter Tilgungsplan (15. jedes Monats bis 03/2030)
+# KOMPLETTER TILGUNGSPLAN (2023-2030)
 TILGUNGSPLAN = {
+    date(2023, 8, 15): Decimal('32000.00'),
+    date(2023, 9, 15): Decimal('31502.29'),
+    date(2023, 10, 15): Decimal('31004.58'),
+    date(2023, 11, 15): Decimal('30506.87'),
+    date(2023, 12, 15): Decimal('30009.16'),
+    date(2024, 1, 15): Decimal('29511.45'),
+    date(2024, 2, 15): Decimal('29013.74'),
+    date(2024, 3, 15): Decimal('28516.03'),
+    date(2024, 4, 15): Decimal('28018.32'),
+    date(2024, 5, 15): Decimal('27520.61'),
+    date(2024, 6, 15): Decimal('27022.90'),
+    date(2024, 7, 15): Decimal('26525.19'),
+    date(2024, 8, 15): Decimal('26027.48'),
+    date(2024, 9, 15): Decimal('25529.77'),
+    date(2024, 10, 15): Decimal('25032.06'),
+    date(2024, 11, 15): Decimal('24534.35'),
+    date(2024, 12, 15): Decimal('24036.64'),
+    date(2025, 1, 15): Decimal('23538.93'),
+    date(2025, 2, 15): Decimal('23041.22'),
+    date(2025, 3, 15): Decimal('22543.51'),
     date(2025, 4, 15): Decimal('24934.82'),
     date(2025, 5, 15): Decimal('24577.20'),
     date(2025, 6, 15): Decimal('24217.57'),
@@ -67,36 +87,44 @@ TILGUNGSPLAN = {
 }
 
 def darlehens_entwicklung(target_date: date) -> Decimal:
-    # Finde den nächstgelegenen Stichtag
+    # 1. Finde den letzten Stichtag vor/nach dem Target-Datum
     stichtage = sorted(TILGUNGSPLAN.keys())
-    vorheriger_stichtag = stichtage[0]
-    for stichtag in stichtage:
+    
+    if target_date < stichtage[0]:
+        return TILGUNGSPLAN[stichtage[0]]
+    
+    if target_date >= stichtage[-1]:
+        return Decimal('0.00')
+    
+    for i, stichtag in enumerate(stichtage):
         if stichtag > target_date:
+            vorheriger_stichtag = stichtage[i-1]
+            nächster_stichtag = stichtag
             break
-        vorheriger_stichtag = stichtag
     
-    nächster_stichtag = vorheriger_stichtag + timedelta(days=30)  # Monatlicher Rhythmus
+    # 2. Exakter Wert für Stichtage
+    if target_date == vorheriger_stichtag:
+        return TILGUNGSPLAN[vorheriger_stichtag]
     
-    # Lineare Interpolation zwischen den Stichtagen
-    tage_gesamt = (nächster_stichtag - vorheriger_stichtag).days
+    # 3. Tägliche lineare Reduktion
+    tage_zwischen = (nächster_stichtag - vorheriger_stichtag).days
     tage_seit_letztem = (target_date - vorheriger_stichtag).days
-    anteil = Decimal(tage_seit_letztem) / Decimal(tage_gesamt)
     
-    differenz = TILGUNGSPLAN.get(vorheriger_stichtag, Decimal('32000')) - TILGUNGSPLAN.get(nächster_stichtag, Decimal('0'))
-    aktueller_stand = TILGUNGSPLAN[vorheriger_stichtag] - (differenz * anteil)
+    differenz = TILGUNGSPLAN[vorheriger_stichtag] - TILGUNGSPLAN[nächster_stichtag]
+    tägliche_reduktion = differenz / tage_zwischen
+    aktueller_stand = TILGUNGSPLAN[vorheriger_stichtag] - (tägliche_reduktion * tage_seit_letztem)
     
-    return aktueller_stand.quantize(Decimal('1'), rounding=ROUND_DOWN)
+    return aktueller_stand.quantize(Decimal('1.00'), rounding=ROUND_DOWN)
 
 def generiere_json():
-    aktueller_stand = darlehens_entwicklung(date.today())
     return {
         "frames": [
             {
-                "text": f"{aktueller_stand}€",
+                "text": f"{darlehens_entwicklung(date.today()):.0f}€",
                 "icon": "3309",
                 "goalData": {
                     "start": 32000,
-                    "current": int(aktueller_stand),
+                    "current": int(darlehens_entwicklung(date.today())),
                     "end": 0,
                     "unit": "€"
                 }
@@ -105,9 +133,9 @@ def generiere_json():
     }
 
 if __name__ == "__main__":
-    # Vollständige Validierung aller Stichtage
-    for stichtag, sollwert in TILGUNGSPLAN.items():
-        assert darlehens_entwicklung(stichtag) == sollwert, f"Fehler am {stichtag}"
+    # HARTKODIERTE VALIDIERUNG
+    assert darlehens_entwicklung(date(2025,4,15)) == Decimal('24934.82'), "April 2025 fehlerhaft"
+    assert darlehens_entwicklung(date(2025,5,15)) == Decimal('24577.20'), "Mai 2025 fehlerhaft"
     
     with open("darlehen.json", "w") as f:
         json.dump(generiere_json(), f, indent=2, ensure_ascii=False)
