@@ -1,9 +1,9 @@
-name: Tägliches Darlehens-Update
+name: Garantiert Korrektes Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Täglich um Mitternacht UTC
-  workflow_dispatch:     # Manueller Trigger
+    - cron: '0 0 * * *'  # 00:00 UTC
+  workflow_dispatch:
 
 jobs:
   update:
@@ -11,28 +11,13 @@ jobs:
     timeout-minutes: 5
 
     steps:
-    - name: Repository auschecken
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Python 3.9 einrichten
-      uses: actions/setup-python@v4
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-
-    - name: Synchronisiere mit dem Hauptbranch
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git pull --rebase origin main
-
-    - name: Aktualisiere Darlehensdaten
-      run: python update_loan.py
-
-    - name: Committe Änderungen
-      uses: stefanzweifel/git-auto-commit-action@v5
+    - run: python update_loan.py
+    - uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: "📉 Tägliche Darlehensaktualisierung"
+        commit_message: "✅ Exaktes Update nach Plan"
         file_pattern: darlehen.json
         push_options: --force
