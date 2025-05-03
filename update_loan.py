@@ -13,34 +13,25 @@ darlehen = {
     'zinsmethode': '30/360'
 }
 
-def berechne_monatszinsen(kapital: Decimal) -> Decimal:
-    return (kapital * darlehen['zins_satz'] / 12).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+def berechne_tägliche_zinsen(kapital: Decimal) -> Decimal:
+    return (kapital * darlehen['zins_satz'] / 360).quantize(Decimal('0.00000001'), rounding=ROUND_DOWN)
 
 def darlehens_entwicklung(target_date: date) -> Decimal:
     current_date = darlehen['start_date']
     kapital = darlehen['start_kapital']
     
     while current_date <= target_date:
-        # Zinsen für den aktuellen Monat berechnen
-        zinsen = berechne_monatszinsen(kapital)
-        kapital += zinsen
+        # Tägliche Zinsen addieren
+        kapital += berechne_tägliche_zinsen(kapital)
         
-        # Monatsrate am 15. abziehen (nicht vor dem Startdatum)
+        # Monatsrate am 15. abziehen (nicht vor Startdatum)
         if current_date.day == 15 and current_date >= darlehen['start_date']:
             kapital -= darlehen['monatsrate']
             kapital = kapital.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
         
-        # Zum 15. des nächsten Monats springen (30/360-Methode)
-        if current_date.month == 12:
-            new_year = current_date.year + 1
-            new_month = 1
-        else:
-            new_year = current_date.year
-            new_month = current_date.month + 1
-        
-        current_date = date(new_year, new_month, 15)
+        current_date += timedelta(days=1)
     
-    return kapital * Decimal('-1')  # Negativen Darlehensstand korrigieren
+    return kapital * Decimal('-1')  # Als negative Schuld darstellen
 
 def generiere_json():
     aktueller_stand = darlehens_entwicklung(date.today())
@@ -63,7 +54,9 @@ if __name__ == "__main__":
     with open("darlehen.json", "w") as f:
         json.dump(generiere_json(), f, indent=2, ensure_ascii=False)
     
-    # Validierung für Mai 2025
-    if date.today() == date(2025, 5, 15):
-        aktueller_wert = darlehens_entwicklung(date.today())
-        assert 24577 <= abs(aktueller_wert) <= 24579, f"Abweichung: {abs(aktueller_wert)}€ statt 24.577,20€"
+    # Validierung für ausgewählte Daten
+    heute = date.today()
+    if heute == date(2025, 5, 15):
+        assert 24577 <= abs(darlehens_entwicklung(heute)) <= 24579
+    elif heute == date(2025, 6, 15):
+        assert 24217 <= abs(darlehens_entwicklung(heute)) <= 24219
