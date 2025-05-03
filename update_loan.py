@@ -10,23 +10,38 @@ darlehen = {
     'start_kapital': Decimal('32000.00'),
     'monatsrate': Decimal('497.71'),
     'zins_satz': Decimal('6.742') / 100,
-    'zinsmethode': '30/360'  # Zurück zu 30/360-Methode
+    'zinsmethode': '30/360'
 }
+
+def monatliche_zinsberechnung(kapital: Decimal) -> Decimal:
+    return (kapital * darlehen['zins_satz'] / 12).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
 
 def darlehens_entwicklung(target_date: date) -> Decimal:
     current_date = darlehen['start_date']
     kapital = darlehen['start_kapital']
     
+    # Berechne alle Zahlungstermine bis zum Target-Datum
     while current_date <= target_date:
-        # Zinsen für 30 Tage berechnen
-        if current_date.day == 15:
-            zinsen = (kapital * darlehen['zins_satz'] / 12).quantize(Decimal('0.01'))
-            kapital += zinsen
+        # Zinsen für den aktuellen Monat berechnen
+        zinsen = monatliche_zinsberechnung(kapital)
+        kapital += zinsen
+        
+        # Rate am 15. abziehen (außer beim Startdatum selbst)
+        if current_date != darlehen['start_date']:
             kapital -= darlehen['monatsrate']
             kapital = kapital.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
         
-        # Immer um 30 Tage springen
-        current_date += timedelta(days=30)
+        # Springe zum nächsten 15. des Monats
+        if current_date.month == 12:
+            current_date = date(current_date.year + 1, 1, 15)
+        else:
+            current_date = date(current_date.year, current_date.month + 1, 15)
+    
+    # Tägliche Zinsen für die Resttage nach dem letzten Zahlungstermin
+    if current_date > target_date:
+        tage_seit_letzter_zahlung = (target_date - current_date.replace(day=15)).days
+        tage = max(0, tage_seit_letzter_zahlung)
+        kapital += monatliche_zinsberechnung(kapital) / 30 * tage
     
     return kapital.quantize(Decimal('1'), rounding=ROUND_DOWN)
 
@@ -35,11 +50,11 @@ def generiere_json():
     return {
         "frames": [
             {
-                "text": f"{abs(aktueller_stand):.0f}€",
+                "text": f"{aktueller_stand:.0f}€",
                 "icon": "3309",
                 "goalData": {
                     "start": 32000,
-                    "current": int(abs(aktueller_stand)),
+                    "current": int(aktueller_stand),
                     "end": 0,
                     "unit": "€"
                 }
@@ -51,7 +66,13 @@ if __name__ == "__main__":
     with open("darlehen.json", "w") as f:
         json.dump(generiere_json(), f, indent=2, ensure_ascii=False)
     
-    # Validierung mit Toleranz
-    if date.today() == date(2025, 4, 15):
-        wert = darlehens_entwicklung(date.today())
-        assert 24930 <= abs(wert) <= 24940, f"Abweichung: {wert}"
+    # Testdaten validieren
+    testdaten = {
+        date(2025, 4, 15): Decimal('24934.82'),
+        date(2025, 5, 15): Decimal('24577.20'),
+        date(2025, 6, 15): Decimal('24217.57')
+    }
+    
+    for datum, sollwert in testdaten.items():
+        istwert = darlehens_entwicklung(datum)
+        assert istwert == sollwert, f"Fehler am {datum}: {istwert} ≠ {sollwert}"
