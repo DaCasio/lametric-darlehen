@@ -1,11 +1,11 @@
 {
   "frames": [
     {
-      "text": "20889€",
+      "text": "20876€",
       "icon": "3309",
       "goalData": {
         "start": 32000,
-        "current": 20888,
+        "current": 20876,
         "end": 0,
         "unit": "€"
       }
