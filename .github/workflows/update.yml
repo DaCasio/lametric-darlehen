@@ -2,22 +2,46 @@ name: Garantiert Korrektes Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 00:00 UTC
-  workflow_dispatch:
+    - cron: '0 0 * * *'  # Täglich um 00:00 UTC
+  workflow_dispatch:     # Zusätzlich manuell startbar
+
+# Erlaubt dem Workflow, die aktualisierte JSON-Datei zu pushen.
+permissions:
+  contents: write
+
+# Verhindert parallele Update-Läufe für denselben Branch.
+concurrency:
+  group: darlehen-update-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    # Feste Ubuntu-Version statt wechselndem ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-    - run: python update_loan.py
-    - uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "✅ Exaktes Update nach Plan"
-        file_pattern: darlehen.json
-        push_options: --force
+      # Repository einschließlich update_loan.py laden.
+      - name: Repository auschecken
+        uses: actions/checkout@v5
+
+      # Aktuellere Python-Version für das Darlehensskript verwenden.
+      - name: Python einrichten
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      # Berechnung ausführen und darlehen.json erzeugen.
+      - name: Darlehensdaten aktualisieren
+        run: python update_loan.py
+
+      # Prüfen, ob die erzeugte Datei syntaktisch gültiges JSON enthält.
+      - name: JSON-Datei validieren
+        run: python -m json.tool darlehen.json > /dev/null
+
+      # Ausschließlich darlehen.json committen und normal pushen.
+      - name: Darlehensdaten speichern
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "Exaktes Update nach Plan"
+          file_pattern: darlehen.json
